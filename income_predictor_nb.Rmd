@@ -1,0 +1,52 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+# Loading Packages
+```{r}
+library(tidyverse)
+```
+
+# Load Data and do Inititial Overview
+```{r}
+income_df <- read.csv('adult.csv')
+head(income_df)
+```
+
+```{r}
+summary(income_df)
+```
+
+As seen everything is looking good, besides <capital.gain>, so I am going to check to see if there are any values other than 0
+
+```{r}
+income_df$capital.gain %>% unique()
+```
+My hunch was incorrect, however the data set on kaggle did not include any dictionaries or descriptions so I will take out the columns that does not make sense to me or have a clear title
+
+```{r}
+simp_df <- income_df %>% select(age, education, marital.status, occupation, relationship, race, sex, hours.per.week, native.country, income)
+```
+
+# Data Cleaning
+From the looks of it the only column I'd like to change is occupation as "?" seems a little vague so I will just change it to "Occupation not specified"
+```{r}
+simp_df$occupation[simp_df$occupation == "?"] <- "Occupation not specified"
+simp_df$occupation %>% unique()
+```
+Nice! Looks like we got rid of the "?"!
+
+# Data Visualization
+Now time to visualize the data and see which variable have a strong relationship with income.
+First I'll do
+```{r}
+simp_df %>% 
+  select(age, income) %>% 
+  mutate(age_bin = 
+           cut(age, breaks = 4)) %>% 
+  group_by(age_bin, income) %>% 
+  count() %>% 
+  ggplot(aes(x = age_bin, fill = income, y = n)) +
+  geom_bar(position = 'dodge', stat = 'identity')
+```
+
